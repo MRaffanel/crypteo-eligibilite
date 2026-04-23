@@ -6,11 +6,13 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const { latitude, longitude, numero, nom_voie, code_postal, nom_commune } = req.body;
-  if (!latitude || !longitude) return res.status(400).json({ error: 'Coordonnées manquantes' });
 
   const API_KEY    = process.env.NETWO_API_KEY;
   const ACTOR_SLUG = process.env.NETWO_ACTOR_SLUG;
-  if (!API_KEY || !ACTOR_SLUG) return res.status(500).json({ error: 'Variables env manquantes' });
+
+  if (!API_KEY || !ACTOR_SLUG) {
+    return res.status(500).json({ error: 'Variables env manquantes', API_KEY: !!API_KEY, ACTOR_SLUG: !!ACTOR_SLUG });
+  }
 
   try {
     const params = new URLSearchParams();
@@ -21,7 +23,10 @@ export default async function handler(req, res) {
     if (code_postal) params.append('code_postal', code_postal);
     if (nom_commune) params.append('nom_commune', nom_commune);
 
-    const netwoRes = await fetch(`https://api.netwo.io/api/v1/eligibility?${params.toString()}`, {
+    const url = `https://api.netwo.io/api/v1/eligibility?${params.toString()}`;
+    console.log('URL appelée:', url);
+
+    const netwoRes = await fetch(url, {
       method: 'GET',
       headers: {
         'content-type': 'application/json',
@@ -29,9 +34,20 @@ export default async function handler(req, res) {
         'x-api-key':     API_KEY,
       }
     });
-    const data = await netwoRes.json();
-    return res.status(netwoRes.status).json(data);
+
+    const text = await netwoRes.text();
+    console.log('Réponse Netwo status:', netwoRes.status);
+    console.log('Réponse Netwo body:', text);
+
+    try {
+      const data = JSON.parse(text);
+      return res.status(netwoRes.status).json(data);
+    } catch(e) {
+      return res.status(200).json({ raw: text, status: netwoRes.status });
+    }
+
   } catch(err) {
-    return res.status(500).json({ error: err.message });
+    console.error('Erreur fetch:', err.message);
+    return res.status(500).json({ error: err.message, stack: err.stack });
   }
 }
