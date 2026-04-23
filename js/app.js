@@ -214,3 +214,58 @@ async function sendContact() {
     btn.textContent = 'Envoyer la demande';
   }
 }
+
+// ─── Points adresses au zoom
+let addressLayer = L.layerGroup();
+
+function setupAddressPoints() {
+  addressLayer.addTo(map);
+
+  map.on('zoomend moveend', function() {
+    if (map.getZoom() >= 17) {
+      fetchAddressPoints();
+    } else {
+      addressLayer.clearLayers();
+    }
+  });
+}
+
+async function fetchAddressPoints() {
+  const bounds = map.getBounds();
+  const center = map.getCenter();
+  addressLayer.clearLayers();
+
+  try {
+    const res = await fetch(
+      `https://api-adresse.data.gouv.fr/search/?q=&lat=${center.lat}&lon=${center.lng}&limit=30`
+    );
+    const data = await res.json();
+
+    (data.features || []).forEach(f => {
+      const [lng, lat] = f.geometry.coordinates;
+      if (!bounds.contains([lat, lng])) return;
+
+      const dot = L.circleMarker([lat, lng], {
+        radius: 5,
+        fillColor: '#F7941D',
+        fillOpacity: 0.85,
+        color: '#fff',
+        weight: 1.5
+      });
+
+      dot.bindTooltip(f.properties.label, { direction: 'top', offset: [0, -6] });
+
+      dot.on('click', function() {
+        pickAddress(f);
+      });
+
+      addressLayer.addLayer(dot);
+    });
+  } catch(e) {
+    console.error('Erreur points adresses:', e);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(setupAddressPoints, 500);
+});
