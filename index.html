@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypteo — Test d'Éligibilité</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav id="navbar">
+    <div class="nav-left">
+      <img src="assets/logo.png" alt="Crypteo" id="logo">
+    </div>
+    <div class="nav-right">
+      <button id="login-btn" onclick="openLogin()">Connexion</button>
+      <div id="user-info">
+        <span id="user-name"></span>
+        <button onclick="logout()" class="btn-logout">Déconnexion</button>
+      </div>
+    </div>
+  </nav>
+
+  <div id="search-container">
+    <div id="search-box">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="address-input" placeholder="Rechercher une adresse..." autocomplete="off">
+      <div id="suggestions"></div>
+    </div>
+    <button id="test-btn" onclick="testEligibility()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Tester l'éligibilité
+    </button>
+  </div>
+
+  <div id="map"></div>
+
+  <div id="results-panel">
+    <div class="panel-header">
+      <h2>Résultats d'éligibilité</h2>
+      <button class="close-btn" onclick="closePanel()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="results-content"></div>
+    <div class="panel-footer">
+      <button onclick="openContact()" class="btn-contact">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.18 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>
+        Être contacté par Crypteo
+      </button>
+    </div>
+  </div>
+
+  <div id="login-modal" class="modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <img src="assets/logo.png" alt="Crypteo" style="height:32px">
+        <button class="close-btn" onclick="closeLogin()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <h3 style="font-size:18px;margin-bottom:4px">Connexion</h3>
+        <p style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:20px">Accès réservé aux collaborateurs Crypteo</p>
+        <input type="text" id="login-user" placeholder="Identifiant" onkeydown="if(event.key==='Enter')login()">
+        <input type="password" id="login-pass" placeholder="Mot de passe" onkeydown="if(event.key==='Enter')login()">
+        <div id="login-error" class="msg-error">Identifiants incorrects</div>
+        <button onclick="login()" class="btn-primary">Se connecter</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="contact-modal" class="modal">
+    <div class="modal-box modal-large">
+      <div class="modal-header">
+        <h3>Demande de contact</h3>
+        <button class="close-btn" onclick="closeContact()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <input type="text" id="contact-firstname" placeholder="Prénom *">
+          <input type="text" id="contact-lastname" placeholder="Nom *">
+        </div>
+        <input type="text" id="contact-company" placeholder="Société">
+        <input type="text" id="contact-address" placeholder="Adresse" readonly style="opacity:0.7;cursor:default">
+        <div class="form-row">
+          <input type="tel" id="contact-phone" placeholder="Téléphone">
+          <input type="email" id="contact-email" placeholder="Email *">
+        </div>
+        <textarea id="contact-message" placeholder="Message (optionnel)"></textarea>
+        <button onclick="sendContact()" class="btn-primary" id="contact-submit">Envoyer la demande</button>
+        <div id="contact-success" class="msg-success">✓ Demande envoyée ! Notre équipe vous recontactera rapidement.</div>
+        <div id="contact-error" class="msg-error">Erreur lors de l'envoi. Merci de réessayer.</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
