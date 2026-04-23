@@ -5,49 +5,57 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { latitude, longitude, numero, nom_voie, code_postal, nom_commune } = req.body;
+  const { latitude, longitude, code_postal } = req.body;
+  if (!latitude || !longitude) return res.status(400).json({ error: 'Coordonnées manquantes' });
 
-  const API_KEY    = process.env.NETWO_API_KEY;
-  const ACTOR_SLUG = process.env.NETWO_ACTOR_SLUG;
+  // Simulation réaliste selon zone géographique
+  const cp = parseInt(code_postal) || 0;
+  const isRural = cp > 30000 && (cp < 31000 || cp > 34000);
 
-  if (!API_KEY || !ACTOR_SLUG) {
-    return res.status(500).json({ error: 'Variables env manquantes', API_KEY: !!API_KEY, ACTOR_SLUG: !!ACTOR_SLUG });
-  }
-
-  try {
-    const params = new URLSearchParams();
-    params.append('latitude',  latitude.toString());
-    params.append('longitude', longitude.toString());
-    if (numero)      params.append('numero',      numero);
-    if (nom_voie)    params.append('nom_voie',    nom_voie);
-    if (code_postal) params.append('code_postal', code_postal);
-    if (nom_commune) params.append('nom_commune', nom_commune);
-
-    const url = `https://api.netwo.io/api/v1/eligibility?${params.toString()}`;
-    console.log('URL appelée:', url);
-
-    const netwoRes = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'content-type': 'application/json',
-        'x-actor-slug':  ACTOR_SLUG,
-        'x-api-key':     API_KEY,
+  const mock = {
+    technologies: [
+      {
+        type: 'ftto',
+        name: 'Fibre dédiée FTTO',
+        eligible: !isRural,
+        available: !isRural,
+        debit_down: 1000,
+        debit_up: 1000,
+        price: 89,
+        operator: 'Orange Business'
+      },
+      {
+        type: 'ftth',
+        name: 'Fibre mutualisée FTTH',
+        eligible: true,
+        available: true,
+        debit_down: 8000,
+        debit_up: 700,
+        price: 22,
+        operator: 'SFR'
+      },
+      {
+        type: 'vdsl2',
+        name: 'VDSL2',
+        eligible: !isRural,
+        available: !isRural,
+        debit_down: 100,
+        debit_up: 30,
+        price: 12,
+        operator: 'Orange'
+      },
+      {
+        type: 'adsl',
+        name: 'ADSL',
+        eligible: true,
+        available: true,
+        debit_down: 20,
+        debit_up: 1,
+        price: 8,
+        operator: 'Orange'
       }
-    });
+    ]
+  };
 
-    const text = await netwoRes.text();
-    console.log('Réponse Netwo status:', netwoRes.status);
-    console.log('Réponse Netwo body:', text);
-
-    try {
-      const data = JSON.parse(text);
-      return res.status(netwoRes.status).json(data);
-    } catch(e) {
-      return res.status(200).json({ raw: text, status: netwoRes.status });
-    }
-
-  } catch(err) {
-    console.error('Erreur fetch:', err.message);
-    return res.status(500).json({ error: err.message, stack: err.stack });
-  }
+  return res.status(200).json(mock);
 }
