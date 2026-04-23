@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -8,7 +8,6 @@ export default async function handler(req, res) {
   const { latitude, longitude, code_postal } = req.body;
   if (!latitude || !longitude) return res.status(400).json({ error: 'Coordonnées manquantes' });
 
-  // Simulation réaliste selon zone géographique
   const cp = parseInt(code_postal) || 0;
   const isRural = cp > 30000 && (cp < 31000 || cp > 34000);
 
@@ -58,4 +57,4 @@ export default async function handler(req, res) {
   };
 
   return res.status(200).json(mock);
-}
+};
