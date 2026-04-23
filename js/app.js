@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
   buildingLayer = L.layerGroup().addTo(map);
   addressLayer  = L.layerGroup().addTo(map);
 
-  map.on('zoomend moveend', onMapChange);
+  map.on('zoomend moveend', function(){ if(document.readyState==='complete') onMapChange(); });
   map.on('zoom', function() {
     document.getElementById('zoom-level').textContent = 'Zoom: ' + map.getZoom();
   });
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
   input.addEventListener('input', function() {
     clearTimeout(debounce);
     const q = this.value.trim();
-    document.getElementById('clear-btn').classList.toggle('visible', q.length > 0);
+    var cb = document.getElementById('clear-btn'); if(cb) cb.classList.toggle('visible', q.length > 0);
     if (q.length < 3) { document.getElementById('suggestions').innerHTML = ''; return; }
     debounce = setTimeout(() => fetchSuggestions(q), 260);
   });
